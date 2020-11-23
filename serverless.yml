@@ -33,20 +33,11 @@ provider:
 #  stage: dev
 
 # you can add statements to the Lambda function's IAM Role here
-#  iamRoleStatements:
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:ListBucket"
-#      Resource: { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
-#    - Effect: "Allow"
-#      Action:
-#        - "s3:PutObject"
-#      Resource:
-#        Fn::Join:
-#          - ""
-#          - - "arn:aws:s3:::"
-#            - "Ref" : "ServerlessDeploymentBucket"
-#            - "/*"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:*
+      Resource: "*"
 
 # you can define service wide environment variables here
 #  environment:
@@ -68,9 +59,7 @@ functions:
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
     events:
-      - http:
-        path: /
-        method: get
+      - http: ANY /
 #      - websocket: $connect
 #      - s3: ${env:BUCKET}
 #      - schedule: rate(10 minutes)
@@ -105,13 +94,28 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
-#    NewResource:
-#      Type: AWS::S3::Bucket
-#      Properties:
-#        BucketName: my-new-bucket
-#  Outputs:
+resources:
+ Resources:
+   DynamoDbTable:
+     Type: 'AWS::DynamoDB::Table'
+     Properties:
+       # キーの型を指定
+       AttributeDefinitions:
+         -
+           AttributeName: id
+           AttributeType: N
+       # キーの種類を指定（ハッシュorレンジキー）
+       KeySchema:
+         -
+           AttributeName: id
+           KeyType: HASH
+       # プロビジョニングするキャパシティーユニットの設定
+       ProvisionedThroughput:
+         ReadCapacityUnits: 1
+         WriteCapacityUnits: 1
+       # テーブル名の指定
+       TableName: Post
+         #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"
 #       Value: "Some output value"
